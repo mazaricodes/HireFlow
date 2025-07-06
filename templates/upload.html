@@ -1,83 +1,325 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>AI-Powered Resume Screening Tool</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HireFlow AI - Resume Screener</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-      .loader {
-        border: 12px solid #f3f3f3;
-        border-radius: 50%;
-        border-top: 12px solid #3498db;
-        width: 30px;
-        height: 30px;
-        animation: spin 2s linear infinite;
-        display: none;
-      }
+        /* Custom Tailwind Configuration for a dark, futuristic theme */
+        :root {
+            --color-bg-dark: #1a1a2e; /* Deep dark blue/purple */
+            --color-card-dark: #16213e; /* Slightly lighter dark blue */
+            --color-text-light: #e0e7ff; /* Light bluish-white */
+            --color-accent-blue: #0f3460; /* Darker accent blue */
+            --color-accent-purple: #533483; /* Purple accent */
+            --color-vibrant-teal: #00e6e6; /* Vibrant teal for highlights */
+            --color-vibrant-pink: #ff007f; /* Vibrant pink for highlights */
+            --color-border-subtle: rgba(255, 255, 255, 0.1); /* Subtle white border */
+            --color-input-bg: #2a2a4a; /* Darker input background */
+            --color-input-border: #4a4a6a; /* Input border */
+            --color-error-bg: #4a1c1c; /* Dark red for errors */
+            --color-error-text: #ffcccc; /* Light red text for errors */
+        }
 
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg-dark);
+            color: var(--color-text-light);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px; /* p-6 */
+        }
+
+        .container {
+            background-color: var(--color-card-dark);
+            border: 1px solid var(--color-border-subtle);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .input-field,
+        textarea {
+            background-color: var(--color-input-bg);
+            border: 1px solid var(--color-input-border);
+            color: var(--color-text-light);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            /* Added Tailwind's 'w-full' for full width within their parent */
+            width: 100%; /* Ensures they take up full available width */
+        }
+        .input-field:focus,
+        textarea:focus {
+            border-color: var(--color-vibrant-teal);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 230, 230, 0.3); /* Teal glow */
+        }
+        .input-field::placeholder,
+        textarea::placeholder {
+            color: rgba(224, 231, 255, 0.6);
+        }
+
+        .file-input-label {
+            background-color: var(--color-accent-blue);
+            color: var(--color-text-light);
+            border: 1px solid var(--color-accent-blue);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .file-input-label:hover {
+            background-color: var(--color-accent-purple);
+            border-color: var(--color-accent-purple);
+            box-shadow: 0 0 0 3px rgba(83, 52, 131, 0.5);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--color-vibrant-teal), var(--color-vibrant-pink));
+            color: #1a1a2e; /* Dark text on vibrant button */
+            font-weight: 700;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 230, 230, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 230, 230, 0.5);
+            background: linear-gradient(45deg, var(--color-vibrant-pink), var(--color-vibrant-teal)); /* Reverse gradient on hover */
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+            background: linear-gradient(45deg, #666, #999); /* Muted gradient when disabled */
+        }
+
+        .btn-secondary {
+            background-color: var(--color-accent-blue);
+            color: var(--color-text-light);
+            border: 1px solid var(--color-border-subtle);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+        .btn-secondary:hover {
+            background-color: var(--color-accent-purple);
+            border-color: var(--color-vibrant-teal); /* Teal border on hover */
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-left-color: var(--color-vibrant-teal);
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        table {
+            background-color: var(--color-card-dark);
+            border: 1px solid var(--color-border-subtle);
+        }
+        thead {
+            background-color: var(--color-accent-blue);
+        }
+        th {
+            color: var(--color-text-light);
+        }
+        tbody tr {
+            border-bottom: 1px solid var(--color-border-subtle);
+        }
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+        tbody tr:hover {
+            background-color: rgba(0, 230, 230, 0.05); /* Subtle teal highlight on hover */
+        }
+        td {
+            color: var(--color-text-light);
+        }
+
+        /* Custom colors for suitability based on theme */
+        .text-suitable { color: var(--color-vibrant-teal); }
+        .text-not-suitable { color: var(--color-vibrant-pink); }
+        .text-maybe-suitable { color: #ffcc00; } /* A bright yellow/orange */
+
+        .error-message {
+            background-color: var(--color-error-bg);
+            border: 1px solid var(--color-vibrant-pink);
+            color: var(--color-error-text);
+        }
     </style>
-  </head>
-  <body>
-    <h1>Upload Resume and Job Description</h1>
-    <form id="uploadForm" enctype="multipart/form-data">
-      <p><input type="file" name="file[]" multiple required></p>
-      <p><textarea name="job_description" placeholder="Job Description" required></textarea></p>
-      <p><input type="text" name="mandatory_keywords" placeholder="Mandatory Keywords" required></p>
-      <p><button type="submit">Submit</button></p>
-      <p><button id="downloadCSV" type="button" style="display: none;">Download CSV</button></p>
-      <div class="loader" id="loadingSpinner"></div>
-    </form>
-    <h2>Results</h2>
-    <table id="resultsTable">
-      <thead>
-        <tr>
-          <th>Resume Name</th>
-          <th>Comments</th>
-          <th>Suitability</th>
-        </tr>
-      </thead>
-      <tbody>
-      </tbody>
-    </table>
+</head>
+<body class="p-6">
+    <div class="container mx-auto p-8 rounded-xl shadow-lg text-center">
+        <h1 class="text-3xl font-extrabold mb-8 tracking-wide">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-pink-500">HireFlow AI</span>
+            <span class="block text-xl font-medium mt-2 text-gray-400">Intelligent Resume Screening</span>
+        </h1>
+
+        <form id="uploadForm" class="space-y-6 max-w-2xl mx-auto">
+            <div>
+                <label for="job_description" class="block text-gray-300 text-sm font-medium mb-2">Job Description:</label>
+                <textarea id="job_description" name="job_description" rows="8" class="input-field resize-y rounded-lg w-full" placeholder="Enter the job description here..." required></textarea>
+            </div>
+
+            <div>
+                <label for="mandatory_keywords" class="block text-gray-300 text-sm font-medium mb-2">Mandatory Keywords (comma-separated):</label>
+                <input type="text" id="mandatory_keywords" name="mandatory_keywords" class="input-field rounded-lg w-full" placeholder="e.g., Python, SQL, Machine Learning" required>
+            </div>
+
+            <div>
+                <label for="file_upload" class="block text-gray-300 text-sm font-medium mb-2">Upload Resumes (PDF files):</label>
+                <input type="file" id="file_upload" name="file[]" accept=".pdf" multiple class="hidden" onchange="updateFileNames()">
+                <label for="file_upload" class="file-input-label inline-flex items-center cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold shadow-md hover:shadow-lg">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    Choose Files
+                </label>
+                <span id="file_names" class="ml-3 text-gray-400 text-sm">No files chosen</span>
+                <p class="text-xs text-gray-500 mt-1">Hold Ctrl (Windows) or Cmd (Mac) to select multiple files.</p>
+            </div>
+
+            <div class="flex justify-center">
+                <button type="submit" class="btn-primary inline-flex items-center justify-center rounded-lg px-6 py-3 text-lg">
+                    <span id="submit_text">Analyze Resumes</span>
+                    <span id="loading_spinner" class="loading-spinner hidden ml-2"></span>
+                </button>
+            </div>
+        </form>
+
+        <div id="results_container" class="mt-12 hidden">
+            <h2 class="text-2xl font-bold text-gray-200 mb-6">Analysis Results</h2>
+            <div class="overflow-x-auto rounded-lg shadow-xl">
+                <table class="min-w-full border-collapse">
+                    <thead>
+                        <tr class="uppercase text-sm leading-normal">
+                            <th class="py-3 px-6 text-center">Resume Name</th>
+                            <th class="py-3 px-6 text-center">Comments</th>
+                            <th class="py-3 px-6 text-center">Suitability</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results_table_body" class="text-sm font-light">
+                        </tbody>
+                </table>
+            </div>
+            <div class="flex justify-center mt-8">
+                <button id="download_csv_btn" class="btn-secondary inline-flex items-center justify-center rounded-lg px-6 py-3 text-lg">
+                    Download CSV
+                </button>
+            </div>
+        </div>
+
+        <div id="error_message" class="mt-8 p-4 rounded-lg error-message hidden">
+            </div>
+    </div>
+
     <script>
-      document.getElementById('uploadForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
 
-        document.getElementById('loadingSpinner').style.display = 'inline-block';
+            const form = event.target;
+            const formData = new FormData(form);
 
-        const formData = new FormData(e.target);
-        const response = await fetch('/upload', {
-          method: 'POST',
-          body: formData
+            const submitButton = form.querySelector('button[type="submit"]');
+            const submitText = document.getElementById('submit_text');
+            const loadingSpinner = document.getElementById('loading_spinner');
+            const resultsContainer = document.getElementById('results_container');
+            const resultsTableBody = document.getElementById('results_table_body');
+            const errorMessageDiv = document.getElementById('error_message');
+
+            // Reset UI
+            resultsContainer.classList.add('hidden');
+            resultsTableBody.innerHTML = '';
+            errorMessageDiv.classList.add('hidden');
+            errorMessageDiv.textContent = '';
+
+            // Show loading state
+            submitButton.disabled = true;
+            submitText.textContent = 'Analyzing...';
+            loadingSpinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.results && data.results.length > 0) {
+                    data.results.forEach(result => {
+                        const row = resultsTableBody.insertRow();
+                        row.classList.add('border-b', 'border-gray-800', 'hover:bg-gray-700'); /* Darker hover */
+                        const nameCell = row.insertCell();
+                        const commentsCell = row.insertCell();
+                        const suitabilityCell = row.insertCell();
+
+                        nameCell.classList.add('py-3', 'px-6', 'text-left', 'whitespace-nowrap', 'font-medium');
+                        commentsCell.classList.add('py-3', 'px-6', 'text-left');
+                        suitabilityCell.classList.add('py-3', 'px-6', 'text-left', 'font-semibold');
+
+                        nameCell.textContent = result[0];
+                        commentsCell.textContent = result[1];
+                        suitabilityCell.textContent = result[2];
+
+                        // Add custom suitability classes
+                        if (result[2] === "Suitable") {
+                            suitabilityCell.classList.add('text-suitable');
+                        } else if (result[2] === "Not Suitable") {
+                            suitabilityCell.classList.add('text-not-suitable');
+                        } else if (result[2] === "Maybe Suitable") {
+                            suitabilityCell.classList.add('text-maybe-suitable');
+                        }
+                    });
+                    resultsContainer.classList.remove('hidden');
+                } else {
+                    errorMessageDiv.textContent = "No results were returned. Please check your inputs.";
+                    errorMessageDiv.classList.remove('hidden');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                errorMessageDiv.textContent = `Error: ${error.message}. Please try again.`;
+                errorMessageDiv.classList.remove('hidden');
+            } finally {
+                // Re-enable button and hide loading state
+                submitButton.disabled = false;
+                submitText.textContent = 'Analyze Resumes';
+                loadingSpinner.classList.add('hidden');
+            }
+            // Ensure the table cells (td) remain left-aligned for readability of content
+            document.querySelectorAll('#results_table_body td').forEach(td => {
+                td.classList.add('text-left');
+            });
         });
 
-        document.getElementById('loadingSpinner').style.display = 'none';
+        document.getElementById('download_csv_btn').addEventListener('click', function() {
+            window.location.href = '/download_csv';
+        });
 
-        if (response.ok) {
-          const json = await response.json();
-          const table = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
-
-          table.innerHTML = '';  // Clear existing table rows
-
-          // Add new table rows with the results
-          json.results.forEach(result => {
-            const newRow = table.insertRow();
-            newRow.insertCell().innerText = result[0];
-            newRow.insertCell().innerText = result[1];
-            newRow.insertCell().innerText = result[2];
-          });
-
-          document.getElementById('downloadCSV').style.display = 'inline';
-        } else {
-          console.error('Failed to fetch results', response);
+        function updateFileNames() {
+            const fileInput = document.getElementById('file_upload');
+            const fileNamesSpan = document.getElementById('file_names');
+            if (fileInput.files.length > 0) {
+                let names = Array.from(fileInput.files).map(file => file.name).join(', ');
+                fileNamesSpan.textContent = names;
+            } else {
+                fileNamesSpan.textContent = 'No files chosen';
+            }
         }
-      });
-
-      document.getElementById("downloadCSV").addEventListener("click", function() {
-        window.location.href = "/download_csv?timestamp=" + new Date().getTime();
-      });
     </script>
-  </body>
+</body>
 </html>
