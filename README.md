@@ -1,5 +1,7 @@
 ## HIREFLOW: An AI Driven Resume Screening Tool
 
+![Screenshot](https://github.com/user-attachments/assets/691cd83a-1222-4304-a8c0-394e6d73d8d2)
+
 ## About
 
 Hireflow is an efficient recruitment assistant powered by Google Gemini. The tool allows recruiters to upload multiple resumes along with a job description. You can further specify mandatory keywords that should be present in a candidate's resume. As a result, the tool will provide an evaluation of each resume against the provided job description and give insights into the suitability of the candidate for the role.
@@ -53,5 +55,3 @@ python screening_tool.py
 Feel free to submit pull requests, raise issues, or give feedback. Your contributions are welcome!
 
 ## If you find this tool useful, please give us a ⭐! Starring the repository supports the project and encourages further development.
-
-![Screenshot](https://github.com/user-attachments/assets/691cd83a-1222-4304-a8c0-394e6d73d8d2)
